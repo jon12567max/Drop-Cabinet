@@ -49,15 +49,15 @@
             </div>
         </main>
 
-        <!-- Input Box Sticky di Bawah -->
-        <footer class="sticky bottom-0 z-20 bg-black/95 backdrop-blur-md border-t border-slate-800 p-3 sm:p-4">
+<!-- Input Box Sticky di Bawah (Sudah Disesuaikan Agar Tidak Tertutup Netlify) -->
+        <footer class="sticky bottom-0 z-20 bg-black/95 backdrop-blur-md border-t border-slate-800 p-3 sm:p-4 pb-12 sm:pb-14">
             <!-- Notifikasi Peringatan Filter -->
             <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
                 <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
                 <span id="alertText">Pesan ditolak sistem keamanan!</span>
             </div>
 
-            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 space-y-2 focus-within:border-sky-500/50 transition-all duration-200">
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 space-y-2 focus-within:border-sky-500/50 transition-all duration-200 shadow-2xl">
                 <!-- Input Nama Opsional -->
                 <div class="flex items-center gap-2 pb-2 border-b border-slate-800/60">
                     <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
@@ -72,16 +72,16 @@
                 
                 <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 mt-1">
                     <div class="flex items-center gap-1 text-slate-400">
-                        <span class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">Strict Link Blocker</span>
+                        <span class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">Strict Link Blocker</span>
                     </div>
-                    <button onclick="savePost()" id="saveBtn" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-semibold text-xs px-4 py-2 rounded-full transition duration-150 flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+                    <!-- Tombol Posting Diposisikan Pas & Jelas -->
+                    <button onclick="savePost()" id="saveBtn" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-semibold text-xs px-4 py-2 rounded-full transition duration-150 flex items-center gap-1.5 shadow-lg shadow-sky-500/20 shrink-0">
                         <span>Posting</span>
                         <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
             </div>
         </footer>
-
     </div>
 
     <script>
