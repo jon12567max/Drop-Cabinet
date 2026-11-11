@@ -26,7 +26,7 @@
             </div>
             <div>
                 <h1 class="font-bold text-sm tracking-wide">Drop Cabinet</h1>
-                <p class="text-[10px] text-slate-400">Ruang Pesan Anonim Real-Time</p>
+                <p class="text-[10px] text-slate-400">Ruang Pesan Anonim</p>
             </div>
         </div>
         <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-medium">
@@ -35,25 +35,24 @@
         </div>
     </header>
 
-    <!-- Kontainer Linimasa Pesan -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-3 pb-24">
+    <!-- Kontainer Linimasa Pesan (Jarak Bawah pb-36 Agar Tidak Tertutup Input Floating) -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-3 pb-36">
         <div id="postsContainer" class="space-y-3">
-            <!-- Pesan akan dimuat secara dinamis oleh script.js -->
             <div class="text-center py-10 text-slate-500 text-xs">
                 Memuat pesan...
             </div>
         </div>
     </main>
 
-    <!-- Footer / Kotak Input Pesan -->
-    <footer class="fixed bottom-0 left-0 right-0 z-20 bg-slate-950/90 backdrop-blur-md border-t border-slate-800/80 p-3 max-w-xl mx-auto">
+    <!-- Footer / Kotak Input Pesan Floating (Aman dari Badge Netlify) -->
+    <footer class="fixed bottom-6 left-4 right-4 z-30 max-w-xl mx-auto">
         <!-- Kotak Peringatan / Error -->
-        <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+        <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2 shadow-lg backdrop-blur-md">
             <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
             <span id="alertText">Pesan ditolak sistem!</span>
         </div>
 
-        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 space-y-2 shadow-2xl">
+        <div class="bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 p-3.5 space-y-2.5 shadow-2xl shadow-black/80">
             <!-- Input Nama Pengirim -->
             <div class="flex items-center gap-2 pb-2 border-b border-slate-800/60">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
@@ -67,7 +66,7 @@
                 class="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none leading-relaxed"></textarea>
             
             <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 mt-1">
-                <span class="text-[10px] text-slate-500">Aman & Terenkripsi</span>
+                <span class="text-[10px] text-slate-500">Strict Link Blocker</span>
                 <!-- Tombol Kirim -->
                 <button onclick="savePost()" id="saveBtn" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-semibold text-xs px-4 py-2 rounded-full transition duration-150 flex items-center gap-1.5 shadow-lg shadow-sky-500/20 shrink-0">
                     <span>Posting</span>
@@ -80,7 +79,6 @@
     <!-- Hubungkan ke file script.js -->
     <script src="script.js"></script>
     <script>
-        // Inisialisasi ikon Lucide setelah halaman termuat
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) lucide.createIcons();
         });
