@@ -2,9 +2,7 @@
 const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    realtime: { params: { eventsPerSecond: 10 } }
-});
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- FILTER SPAM & LINK ---
 const BAD_WORDS = ['judol', 'slot', 'gacor', 'zeus', 'maxwin', 'pragmatic'];
@@ -55,15 +53,14 @@ async function savePost() {
         console.error(error);
     } else {
         contentInput.value = '';
-        fetchPosts(); // Langsung tarik data setelah kirim
+        fetchPosts(); // Tarik data langsung setelah kirim
     }
 }
 
-// Variabel untuk menyimpan cache postingan terakhir agar tidak mereset posisi scroll
-let lastPostCount = 0;
-
 // --- AMBIL DATA DARI SUPABASE ---
-async function fetchPosts(isBackgroundCheck = false) {
+let lastDataLength = 0;
+
+async function fetchPosts() {
     const { data, error } = await supabaseClient
         .from('posts')
         .select('*')
@@ -74,16 +71,14 @@ async function fetchPosts(isBackgroundCheck = false) {
         return;
     }
 
-    // Jika dipanggil secara background (auto-polling) dan jumlah datanya sama, tidak perlu render ulang agar layar tidak berkedip
-    if (isBackgroundCheck && data && data.length === lastPostCount) {
-        return;
+    // Jika jumlah data bertambah, render ulang tampilan
+    if (data && data.length !== lastDataLength) {
+        lastDataLength = data.length;
+        renderPosts(data);
+    } else if (lastDataLength === 0 && data) {
+        lastDataLength = data.length;
+        renderPosts(data);
     }
-
-    if (data) {
-        lastPostCount = data.length;
-    }
-
-    renderPosts(data);
 }
 
 // --- RENDER LINIMASA ---
@@ -129,20 +124,12 @@ function escapeHtml(text) {
     });
 }
 
-// --- INISIALISASI REALTIME & AUTO-POLLING CADANGAN ---
+// --- INISIALISASI OTOMATIS ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts();
 
-    // Jalur 1: Supabase Realtime WebSocket
-    supabaseClient
-        .channel('public:posts')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
-            fetchPosts();
-        })
-        .subscribe();
-
-    // Jalur 2: Auto-Polling cadangan tiap 3 detik (Menjamin 100% pesan muncul otomatis tanpa reload)
+    // Cek pesan baru setiap 2 detik secara otomatis dan senyap
     setInterval(() => {
-        fetchPosts(true);
-    }, 3000);
+        fetchPosts();
+    }, 2000);
 });
