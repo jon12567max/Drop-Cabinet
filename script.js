@@ -2,16 +2,11 @@
 const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
 
-// Buat Supabase Client dengan fitur Realtime aktif
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    realtime: {
-        params: {
-            eventsPerSecond: 10
-        }
-    }
+    realtime: { params: { eventsPerSecond: 10 } }
 });
 
-// --- FUNGSI SPAM & anti-link FILTER ---
+// --- FILTER SPAM & LINK ---
 const BAD_WORDS = ['judol', 'slot', 'gacor', 'zeus', 'maxwin', 'pragmatic'];
 const LINK_REGEX = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.[a-zA-Z]{2,})/i;
 
@@ -35,7 +30,6 @@ async function savePost() {
 
     if (!content) return;
 
-    // Cek filter link & spam
     const errorMsg = validateContent(content);
     if (errorMsg) {
         alertText.innerText = errorMsg;
@@ -61,12 +55,15 @@ async function savePost() {
         console.error(error);
     } else {
         contentInput.value = '';
-        // Tidak perlu fetchPosts() manual di sini karena Realtime Listener yang akan otomatis mengambilnya
+        fetchPosts(); // Langsung tarik data setelah kirim
     }
 }
 
+// Variabel untuk menyimpan cache postingan terakhir agar tidak mereset posisi scroll
+let lastPostCount = 0;
+
 // --- AMBIL DATA DARI SUPABASE ---
-async function fetchPosts() {
+async function fetchPosts(isBackgroundCheck = false) {
     const { data, error } = await supabaseClient
         .from('posts')
         .select('*')
@@ -77,10 +74,19 @@ async function fetchPosts() {
         return;
     }
 
+    // Jika dipanggil secara background (auto-polling) dan jumlah datanya sama, tidak perlu render ulang agar layar tidak berkedip
+    if (isBackgroundCheck && data && data.length === lastPostCount) {
+        return;
+    }
+
+    if (data) {
+        lastPostCount = data.length;
+    }
+
     renderPosts(data);
 }
 
-// --- RENDER LINIMASA POSTINGAN ---
+// --- RENDER LINIMASA ---
 function renderPosts(posts) {
     const container = document.getElementById('postsContainer');
     if (!container) return;
@@ -123,29 +129,20 @@ function escapeHtml(text) {
     });
 }
 
-// --- SUBSCRIBER REAL-TIME LIVE ---
-function subscribeRealtime() {
-    supabaseClient
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes',
-            {
-                event: '*', // Mendengar INSERT (pesan baru) maupun DELETE (hapus)
-                schema: 'public',
-                table: 'posts'
-            },
-            (payload) => {
-                console.log('Perubahan Realtime terdeteksi:', payload);
-                fetchPosts(); // Muat ulang otomatis saat ada data baru masuk!
-            }
-        )
-        .subscribe((status) => {
-            console.log('Status Realtime:', status);
-        });
-}
-
-// Inisialisasi saat web dimuat
+// --- INISIALISASI REALTIME & AUTO-POLLING CADANGAN ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts();
-    subscribeRealtime();
+
+    // Jalur 1: Supabase Realtime WebSocket
+    supabaseClient
+        .channel('public:posts')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+            fetchPosts();
+        })
+        .subscribe();
+
+    // Jalur 2: Auto-Polling cadangan tiap 3 detik (Menjamin 100% pesan muncul otomatis tanpa reload)
+    setInterval(() => {
+        fetchPosts(true);
+    }, 3000);
 });
