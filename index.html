@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drop Cabinet — Secure Feed</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-black text-slate-100 min-h-screen flex justify-center font-sans antialiased selection:bg-sky-500 selection:text-white">
+
+    <div class="w-full max-w-2xl min-h-screen border-x border-slate-800 flex flex-col bg-black">
+        
+        <!-- Header Sticky -->
+        <header class="sticky top-0 z-20 backdrop-blur-md bg-black/80 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20 shadow-sm">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                        Drop Cabinet
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-sky-400 fill-sky-400/20"></i>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Anti-Judol & Anti-Phishing Shield Active</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Max Security</span>
+            </div>
+        </header>
+
+        <!-- Feed Container -->
+        <main id="postsContainer" class="flex-1 divide-y divide-slate-800/80 overflow-y-auto">
+            <div class="p-8 text-center text-slate-500 text-sm flex flex-col items-center gap-2">
+                <i data-lucide="loader-2" class="w-6 h-6 animate-spin text-sky-400"></i>
+                <span>Memuat linimasa aman...</span>
+            </div>
+        </main>
+
+        <!-- Input Box Sticky di Bawah -->
+        <footer class="sticky bottom-0 z-20 bg-black/95 backdrop-blur-md border-t border-slate-800 p-3 sm:p-4">
+            <!-- Notifikasi Peringatan Filter -->
+            <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
+                <span id="alertText">Pesan ditolak sistem keamanan!</span>
+            </div>
+
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-3 space-y-2 focus-within:border-sky-500/50 transition-all duration-200">
+                <!-- Input Nama Opsional -->
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-800/60">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
+                    <input type="text" id="senderName" placeholder="Nama / Panggilan (Opsional, kosongkan jadi Anonim)" 
+                        maxlength="30"
+                        class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
+                </div>
+
+                <!-- Input Pesan Utama -->
+                <textarea id="postContent" rows="2" placeholder="Apa yang ingin kamu drop hari ini? (Dilarang mengirim link/URL)" 
+                    class="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none leading-relaxed"></textarea>
+                
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 mt-1">
+                    <div class="flex items-center gap-1 text-slate-400">
+                        <span class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">Strict Link Blocker</span>
+                    </div>
+                    <button onclick="savePost()" id="saveBtn" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-semibold text-xs px-4 py-2 rounded-full transition duration-150 flex items-center gap-1.5 shadow-lg shadow-sky-500/20">
+                        <span>Posting</span>
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7'; 
+        
+        // SANDI RAHASIA ADMIN
+        const ADMIN_SECRET = "rahasia123";
+
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const badWords = [
+            'ngentot', 'ngntot', 'ntot', 'kontol', 'kntl', 'memek', 'mmk', 
+            'jembut', 'jmbt', 'puki', 'pukimak', 'pantek', 'pntk', 'pler', 
+            'pepek', 'colok', 'coli', 'anjing', 'anjg', 'njg', 'babi', 
+            'asu', 'anjir', 'monyet', 'bajingan', 'bjngan', 'kampang', 
+            'goblok', 'gblk', 'tolol', 'bego', 'bangsat', 'bgst', 'tai', 
+            'taik', 'bangke', 'jancok', 'jncok', 'cok', 'cuk', 'dancok', 'keparat',
+            // Tambahan indikasi judol/spam promosi
+            'slot', 'gacor', 'maxwin', 'pragmatic', 'mahjong', 'wd'
+        ];
+
+        function validatePost(text) {
+            if (!text.trim()) return "Pesan tidak boleh kosong!";
+            if (text.length > 500) return "Pesan terlalu panjang! Maksimal 500 karakter.";
+
+            const lowerText = text.toLowerCase();
+
+            // 1. BLOKIR LINK & URL (Mencegah Phishing & Judol)
+            // Mendeteksi http://, https://, www., atau ekstensi domain umum
+            const urlPattern = /(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(com|id|net|org|site|xyz|bet|slot|top|io|me|cc|tk|ml|ga|cf))/i;
+            if (urlPattern.test(lowerText)) {
+                return "Ditolak! Pesan mengandung link/URL yang dilarang (mencegah spam/phishing).";
+            }
+
+            // 2. CEK KATA KASAR & KATA KUNCI JUDOL
+            const cleanText = lowerText.replace(/[^a-z0-9]/g, '');
+            for (let word of badWords) {
+                if (cleanText.includes(word)) {
+                    return `Pesan mengandung kata terlarang / indikasi promosi ("${word}"). Ditolak!`;
+                }
+            }
+
+            // 3. CEK VIRTEX / SPAM KARAKTER
+            const nonAsciiCount = (text.match(/[^\x00-\x7F]/g) || []).length;
+            if (nonAsciiCount > 100 || /[\u0b00-\u0bff\u200b-\u200f\u2028-\u202f]/g.test(text)) {
+                return "Terdeteksi pola Virtex/Spam karakter berbahaya! Ditolak.";
+            }
+
+            // 4. CEK PENGULANGAN KARAKTER BERLEBIH
+            if (/(.)\1{15,}/.test(text)) {
+                return "Terdeteksi spam pengulangan karakter!";
+            }
+
+            return null;
+        }
+
+        function showAlert(msg) {
+            const alertBox = document.getElementById('alertBox');
+            const alertText = document.getElementById('alertText');
+            alertText.innerText = msg;
+            alertBox.classList.remove('hidden');
+            setTimeout(() => {
+                alertBox.classList.add('hidden');
+            }, 4000);
+        }
+
+        function getRobotUser(seedString, customName) {
+            let hash = 0;
+            for (let i = 0; i < seedString.length; i++) {
+                hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const idNum = Math.abs(hash % 9000) + 1000;
+            const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${seedString}`;
+            const displayName = customName && customName.trim() ? escapeHtml(customName.trim()) : "Anonimous";
+
+            return {
+                name: displayName,
+                handle: `@anon_${idNum}`,
+                avatar: avatarUrl
+            };
+        }
+
+        async function fetchPosts() {
+            const container = document.getElementById('postsContainer');
+            const { data, error } = await db
+                .from('posts')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-red-400 text-sm space-y-2">
+                        <i data-lucide="alert-circle" class="w-6 h-6 mx-auto"></i>
+                        <p>Gagal memuat feed: ${error.message}</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center text-slate-500 text-sm space-y-2">
+                        <i data-lucide="inbox" class="w-8 h-8 mx-auto text-slate-600"></i>
+                        <p>Belum ada postingan. Jadilah yang pertama nge-drop!</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = data.map(post => {
+                const textContent = post.content || post.text || '';
+                const sender = post.sender_name || '';
+                const user = getRobotUser(post.id ? String(post.id) : (post.created_at || 'seed'), sender);
+                
+                return `
+                <article class="p-4 hover:bg-slate-900/40 transition duration-150 flex gap-3 relative group">
+                    <div class="shrink-0">
+                        <img src="${user.avatar}" alt="Robot Avatar" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 p-1 shadow-sm">
+                    </div>
+                    <div class="flex-1 min-w-0 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5 truncate">
+                                <span class="font-bold text-sm text-slate-100 truncate">${user.name}</span>
+                                <span class="text-xs text-slate-500 truncate">${user.handle}</span>
+                                <span class="text-xs text-slate-600">·</span>
+                                <span class="text-xs text-slate-500 shrink-0">${formatTime(post.created_at)}</span>
+                            </div>
+                            <!-- Tombol Hapus Admin -->
+                            <button onclick="deletePost('${post.id}')" title="Hapus sebagai Admin" class="text-slate-400 hover:text-rose-400 bg-slate-900/80 border border-slate-800 hover:border-rose-500/30 p-1.5 rounded-lg transition shadow-sm">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm text-slate-200 leading-relaxed break-words whitespace-pre-wrap font-normal">${escapeHtml(textContent)}</p>
+                    </div>
+                </article>
+            `}).join('');
+
+            lucide.createIcons();
+        }
+
+        async function deletePost(postId) {
+            const password = prompt("Masukkan sandi rahasia admin untuk menghapus postingan ini:");
+            if (password === null) return;
+
+            if (password !== ADMIN_SECRET) {
+                alert("Sandi admin salah! Akses ditolak.");
+                return;
+            }
+
+            const { error } = await db
+                .from('posts')
+                .delete()
+                .eq('id', postId);
+
+            if (error) {
+                alert("Gagal menghapus: " + error.message);
+            } else {
+                fetchPosts();
+            }
+        }
+
+        async function savePost() {
+            const nameInput = document.getElementById('senderName');
+            const contentInput = document.getElementById('postContent');
+            const btn = document.getElementById('saveBtn');
+            
+            const content = contentInput.value;
+            const senderName = nameInput.value.trim();
+
+            const errorMsg = validatePost(content);
+            if (errorMsg) {
+                showAlert(errorMsg);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            btn.innerText = 'Memeriksa...';
+
+            const { error } = await db
+                .from('posts')
+                .insert([{ 
+                    content: content.trim(),
+                    sender_name: senderName ? senderName : null 
+                }]);
+
+            if (error) {
+                alert('Gagal mengirim: ' + error.message);
+            } else {
+                contentInput.value = '';
+                nameInput.value = '';
+                fetchPosts();
+            }
+
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+            btn.innerHTML = `<span>Posting</span><i data-lucide="send" class="w-3.5 h-3.5"></i>`;
+            lucide.createIcons();
+        }
+
+        function formatTime(isoString) {
+            if (!isoString) return 'Baru saja';
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        fetchPosts();
+    </script>
+</body>
+</html>
