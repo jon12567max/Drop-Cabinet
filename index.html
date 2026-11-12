@@ -65,7 +65,26 @@
                 <textarea id="postContent" rows="2" placeholder="Tulis unek-unek atau pesan publikmu di sini..." 
                     class="w-full bg-transparent text-slate-100 placeholder-slate-600 text-xs focus:outline-none resize-none leading-relaxed"></textarea>
             </div>
-            
+            <!-- Pilihan Mood Aura di dalam form input -->
+<div class="flex items-center gap-2 pt-1 pb-1 overflow-x-auto">
+    <span class="text-[10px] text-slate-500 shrink-0">Aura:</span>
+    <label class="cursor-pointer">
+        <input type="radio" name="postMood" value="chill" checked class="peer hidden">
+        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-sky-500/20 peer-checked:text-sky-400 peer-checked:border peer-checked:border-sky-500/40 block transition">✨ Chill</span>
+    </label>
+    <label class="cursor-pointer">
+        <input type="radio" name="postMood" value="rant" class="peer hidden">
+        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-rose-500/20 peer-checked:text-rose-400 peer-checked:border peer-checked:border-rose-500/40 block transition">🔥 Rant</span>
+    </label>
+    <label class="cursor-pointer">
+        <input type="radio" name="postMood" value="mystery" class="peer hidden">
+        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-purple-500/20 peer-checked:text-purple-400 peer-checked:border peer-checked:border-purple-500/40 block transition">🔮 Mystery</span>
+    </label>
+    <label class="cursor-pointer">
+        <input type="radio" name="postMood" value="melancholy" class="peer hidden">
+        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-blue-500/20 peer-checked:text-blue-400 peer-checked:border peer-checked:border-blue-500/40 block transition">🌧️ Melancholy</span>
+    </label>
+</div>
             <div class="flex items-center justify-between pt-1">
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-500/70"></i>
