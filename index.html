@@ -34,7 +34,7 @@
     </header>
 
     <!-- Kontainer Linimasa Pesan -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-48">
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-56">
         <div id="postsContainer" class="space-y-3.5">
             <div class="text-center py-12 text-slate-500 text-xs flex flex-col items-center gap-2">
                 <div class="w-6 h-6 border-2 border-slate-700 border-t-sky-500 rounded-full animate-spin"></div>
@@ -44,31 +44,42 @@
     </main>
 
     <!-- Footer / Kotak Input Pesan Floating -->
-    <footer class="fixed bottom-6 left-4 right-4 z-30 max-w-xl mx-auto">
+    <footer class="fixed bottom-4 left-4 right-4 z-30 max-w-xl mx-auto">
         <!-- Kotak Peringatan / Error -->
         <div id="alertBox" class="hidden mb-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2.5 shadow-xl backdrop-blur-md">
             <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
             <span id="alertText">Pesan ditolak sistem!</span>
         </div>
 
-        <div class="bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-4 space-y-3 shadow-2xl shadow-black/80 ring-1 ring-white/5">
+        <!-- Pop-Up Galeri GIF Ala Instagram -->
+        <div id="gifPickerModal" class="hidden mb-2 bg-slate-900/95 backdrop-blur-2xl rounded-2xl border border-slate-800 p-3 shadow-2xl space-y-2.5">
+            <div class="flex items-center gap-2">
+                <div class="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 focus-within:border-sky-500/50">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
+                    <input type="text" id="gifSearchInput" placeholder="Cari GIF (misal: kucing, ketawa, sedih)..." 
+                        oninput="handleGifSearch(this.value)"
+                        class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
+                </div>
+                <button type="button" onclick="toggleGifPicker()" class="w-7 h-7 rounded-xl bg-slate-800 text-slate-400 hover:text-white text-xs flex items-center justify-center shrink-0">
+                    ✕
+                </button>
+            </div>
+            
+            <!-- Grid Hasil GIF -->
+            <div id="gifGrid" class="grid grid-cols-3 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                <!-- GIF muncul otomatis di sini -->
+            </div>
+            <div class="text-[9px] text-slate-600 text-right">Powered by GIPHY</div>
+        </div>
+
+        <div class="bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-3.5 space-y-2.5 shadow-2xl shadow-black/80 ring-1 ring-white/5">
             <!-- Input Nama Pengirim -->
-            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
+            <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
                 <input type="text" id="senderName" placeholder="Nama / Panggilan (Opsional)" 
                     maxlength="30"
                     class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
             </div>
-
-            <!-- Tombol Preset GIF Cepat -->
-<div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px]">
-    <span class="text-slate-500 shrink-0 font-medium">⚡ GIF Cepat:</span>
-    <button type="button" onclick="setPresetGif('https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif')" class="px-2 py-1 rounded-lg bg-slate-950/60 text-slate-300 border border-slate-800 hover:border-sky-500/40 shrink-0 transition">🐱 Kucing</button>
-    <button type="button" onclick="setPresetGif('https://media.giphy.com/media/121Dnh0yOBNniE/giphy.gif')" class="px-2 py-1 rounded-lg bg-slate-950/60 text-slate-300 border border-slate-800 hover:border-sky-500/40 shrink-0 transition">🍿 Popcorn</button>
-    <button type="button" onclick="setPresetGif('https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif')" class="px-2 py-1 rounded-lg bg-slate-950/60 text-slate-300 border border-slate-800 hover:border-sky-500/40 shrink-0 transition">🌧️ Hujan</button>
-    <button type="button" onclick="setPresetGif('https://media.giphy.com/media/l0HlRnAWXxn0MhOBK/giphy.gif')" class="px-2 py-1 rounded-lg bg-slate-950/60 text-slate-300 border border-slate-800 hover:border-sky-500/40 shrink-0 transition">🎉 Party</button>
-    <button type="button" onclick="setPresetGif('')" class="px-2 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 shrink-0 transition">❌ Hapus GIF</button>
-</div>
 
             <!-- Input Isi Pesan -->
             <div class="px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
@@ -76,15 +87,16 @@
                     class="w-full bg-transparent text-slate-100 placeholder-slate-600 text-xs focus:outline-none resize-none leading-relaxed"></textarea>
             </div>
 
-            <!-- Input Tautan GIF (Opsional) -->
-            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
-                <i data-lucide="image" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
-                <input type="text" id="postGif" placeholder="Link GIF (Opsional, misal dari Tenor/Giphy)" 
-                    class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
+            <!-- Pratinjau GIF Terpilih (Muncul otomatis saat GIF dipilih) -->
+            <div id="selectedGifPreview" class="hidden relative w-20 h-20 rounded-xl overflow-hidden border border-sky-500/40 bg-slate-950">
+                <img id="previewGifImg" src="" alt="Selected GIF" class="w-full h-full object-cover" />
+                <button type="button" onclick="clearSelectedGif()" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/75 text-white text-[10px] flex items-center justify-center hover:bg-rose-500 transition">
+                    ✕
+                </button>
             </div>
 
             <!-- Pilihan Mood Aura -->
-            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                 <span class="text-[10px] text-slate-500 shrink-0 font-medium">Aura:</span>
                 <label class="cursor-pointer shrink-0">
                     <input type="radio" name="postMood" value="chill" checked class="peer hidden">
@@ -104,12 +116,13 @@
                 </label>
             </div>
             
-            <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
-                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-500/70"></i>
-                    <span>Secure & Filtered</span>
-                </div>
-                <!-- Tombol Kirim -->
+            <!-- Baris Tombol Bawah (Tombol GIF + Tombol Posting) -->
+            <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/60">
+                <button type="button" onclick="toggleGifPicker()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-sky-400 border border-slate-700/60 text-xs font-medium transition">
+                    <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+                    <span>Pilih GIF</span>
+                </button>
+
                 <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-5 py-2 rounded-xl transition duration-150 flex items-center gap-2 shadow-lg shadow-sky-500/25 shrink-0">
                     <span>Posting</span>
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
