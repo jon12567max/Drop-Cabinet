@@ -6,12 +6,11 @@ const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Daftar kata atau pola terlarang (opsional untuk filter keamanan)
+// Filter sederhana keamanan teks/link
 const bannedWords = ['http://', 'https://', 'www.']; 
 
 function containsBannedContent(text) {
     const lower = text.toLowerCase();
-    // Blokir link URL mentah atau kata terlarang di sini
     return bannedWords.some(word => lower.includes(word));
 }
 
@@ -92,6 +91,13 @@ function renderPosts(posts) {
         const timeAgo = timeSince(new Date(post.created_at));
         const sender = escapeHtml(post.sender_name || 'Anonim');
         const content = escapeHtml(post.content || '');
+        const imageUrl = post.image_url ? escapeHtml(post.image_url) : '';
+
+        const gifElement = imageUrl ? `
+            <div class="mt-2.5 overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/50">
+                <img src="${imageUrl}" alt="GIF" class="w-full max-h-60 object-cover rounded-lg" loading="lazy" onerror="this.parentElement.style.display='none'">
+            </div>
+        ` : '';
 
         return `
             <div class="rounded-2xl border p-4 shadow-xl backdrop-blur-md transition-all duration-200 ${style.bg} space-y-2.5">
@@ -110,19 +116,24 @@ function renderPosts(posts) {
                     </div>
                 </div>
                 <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words pl-1">${content}</p>
+                ${gifElement}
             </div>
         `;
     }).join('');
+
+    if (window.lucide) lucide.createIcons();
 }
 
 // 4. Simpan Pesan Baru ke Database
 async function savePost() {
     const senderNameInput = document.getElementById('senderName');
     const contentInput = document.getElementById('postContent');
+    const gifInput = document.getElementById('postGif');
     const saveBtn = document.getElementById('saveBtn');
 
     const senderName = senderNameInput.value.trim();
     const content = contentInput.value.trim();
+    const gifUrl = gifInput.value.trim();
     const selectedMood = document.querySelector('input[name="postMood"]:checked')?.value || 'chill';
 
     if (!content) {
@@ -143,7 +154,8 @@ async function savePost() {
         .insert([{
             sender_name: senderName || 'Anonim',
             content: content,
-            mood: selectedMood
+            mood: selectedMood,
+            image_url: gifUrl
         }]);
 
     saveBtn.disabled = false;
@@ -155,11 +167,12 @@ async function savePost() {
         showAlert('Gagal mengirim pesan, silakan coba lagi.');
     } else {
         contentInput.value = '';
+        gifInput.value = '';
         fetchPosts();
     }
 }
 
-// 5. Fungsi Utuilitas Pendukung
+// 5. Fungsi Utilitas Pendukung
 function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function (m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
@@ -185,7 +198,6 @@ function timeSince(date) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts();
 
-    // Berlangganan perubahan database secara real-time
     supabaseClient
         .channel('public:posts')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
