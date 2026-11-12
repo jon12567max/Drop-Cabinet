@@ -1,12 +1,19 @@
 // ==========================================
-// DROP CABINET - SCRIPT UTAMA (OPTIMIZED)
+// DROP CABINET - SCRIPT UTAMA (GIPHY PICKER + REALTIME)
 // ==========================================
 
 const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Filter sederhana keamanan teks/link
+// Giphy Public API Key
+const GIPHY_API_KEY = 'dc6zaTOxFJmzC';
+
+// State GIF Terpilih
+let selectedGifUrl = '';
+let gifSearchTimeout = null;
+
+// Filter sederhana keamanan teks/link di isi pesan
 const bannedWords = ['http://', 'https://', 'www.']; 
 
 function containsBannedContent(text) {
@@ -27,7 +34,79 @@ function showAlert(msg) {
     }
 }
 
-// 1. Ambil Data Pesan dari Supabase
+// ==========================================
+// FITUR PENCARIAN GIF ALA INSTAGRAM
+// ==========================================
+
+function toggleGifPicker() {
+    const modal = document.getElementById('gifPickerModal');
+    if (!modal) return;
+    
+    modal.classList.toggle('hidden');
+    if (!modal.classList.contains('hidden')) {
+        fetchGifs(''); // Muat GIF trending saat dibuka
+        const searchInput = document.getElementById('gifSearchInput');
+        if (searchInput) searchInput.focus();
+    }
+}
+
+function handleGifSearch(query) {
+    clearTimeout(gifSearchTimeout);
+    gifSearchTimeout = setTimeout(() => {
+        fetchGifs(query.trim());
+    }, 400);
+}
+
+async function fetchGifs(query) {
+    const grid = document.getElementById('gifGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '<div class="col-span-3 text-center py-6 text-[10px] text-slate-500">Memuat GIF...</div>';
+
+    const endpoint = query 
+        ? `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=15&rating=pg-13`
+        : `https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=15&rating=pg-13`;
+
+    try {
+        const res = await fetch(endpoint);
+        const json = await res.json();
+        
+        if (!json.data || json.data.length === 0) {
+            grid.innerHTML = '<div class="col-span-3 text-center py-6 text-[10px] text-slate-500">GIF tidak ditemukan.</div>';
+            return;
+        }
+
+        grid.innerHTML = json.data.map(gif => {
+            const previewUrl = gif.images.fixed_width_small.url;
+            const fullUrl = gif.images.fixed_width.url;
+            return `
+                <button type="button" onclick="selectGif('${fullUrl}')" class="aspect-square rounded-lg overflow-hidden bg-slate-950 border border-slate-800 hover:border-sky-500 active:scale-95 transition">
+                    <img src="${previewUrl}" loading="lazy" class="w-full h-full object-cover" />
+                </button>
+            `;
+        }).join('');
+    } catch (err) {
+        grid.innerHTML = '<div class="col-span-3 text-center py-6 text-[10px] text-rose-400">Gagal memuat GIF. Coba lagi.</div>';
+    }
+}
+
+function selectGif(url) {
+    selectedGifUrl = url;
+    document.getElementById('previewGifImg').src = url;
+    document.getElementById('selectedGifPreview').classList.remove('hidden');
+    document.getElementById('gifPickerModal').classList.add('hidden');
+}
+
+function clearSelectedGif() {
+    selectedGifUrl = '';
+    document.getElementById('previewGifImg').src = '';
+    document.getElementById('selectedGifPreview').classList.add('hidden');
+}
+
+// ==========================================
+// DATABASE & LINIMASA SUPABASE
+// ==========================================
+
 async function fetchPosts() {
     const { data, error } = await supabaseClient
         .from('posts')
@@ -43,7 +122,6 @@ async function fetchPosts() {
     renderPosts(data || []);
 }
 
-// 2. Pemetaan Gaya Berdasarkan Mood Aura
 function getMoodStyle(mood) {
     switch(mood) {
         case 'rant':
@@ -64,7 +142,7 @@ function getMoodStyle(mood) {
                 badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
                 label: '🌧️ Melancholy'
             };
-        default: // chill
+        default:
             return {
                 bg: 'bg-slate-900/60 border-slate-800/80 shadow-black/40',
                 badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
@@ -72,19 +150,7 @@ function getMoodStyle(mood) {
             };
     }
 }
-// Fungsi untuk otomatis mengisi input GIF dari tombol preset
-function setPresetGif(url) {
-    const gifInput = document.getElementById('postGif');
-    if (gifInput) {
-        gifInput.value = url;
-        if (url) {
-            showAlert('GIF berhasil dipilih! Silakan klik Posting.');
-        } else {
-            showAlert('Pilihan GIF dibersihkan.');
-        }
-    }
-}
-// 3. Render Kartu Pesan ke Linimasa
+
 function renderPosts(posts) {
     const container = document.getElementById('postsContainer');
     if (!container) return;
@@ -135,20 +201,17 @@ function renderPosts(posts) {
     if (window.lucide) lucide.createIcons();
 }
 
-// 4. Simpan Pesan Baru ke Database
 async function savePost() {
     const senderNameInput = document.getElementById('senderName');
     const contentInput = document.getElementById('postContent');
-    const gifInput = document.getElementById('postGif');
     const saveBtn = document.getElementById('saveBtn');
 
     const senderName = senderNameInput.value.trim();
     const content = contentInput.value.trim();
-    const gifUrl = gifInput.value.trim();
     const selectedMood = document.querySelector('input[name="postMood"]:checked')?.value || 'chill';
 
-    if (!content) {
-        showAlert('Pesan tidak boleh kosong!');
+    if (!content && !selectedGifUrl) {
+        showAlert('Tulis pesan atau pilih GIF terlebih dahulu!');
         return;
     }
 
@@ -166,7 +229,7 @@ async function savePost() {
             sender_name: senderName || 'Anonim',
             content: content,
             mood: selectedMood,
-            image_url: gifUrl
+            image_url: selectedGifUrl
         }]);
 
     saveBtn.disabled = false;
@@ -178,12 +241,15 @@ async function savePost() {
         showAlert('Gagal mengirim pesan, silakan coba lagi.');
     } else {
         contentInput.value = '';
-        gifInput.value = '';
+        clearSelectedGif();
         fetchPosts();
     }
 }
 
-// 5. Fungsi Utilitas Pendukung
+// ==========================================
+// FUNGSI UTILITAS & REAL-TIME SYNC
+// ==========================================
+
 function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function (m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
@@ -205,7 +271,6 @@ function timeSince(date) {
     return 'Baru saja';
 }
 
-// 6. Inisialisasi Saat Halaman Dimuat & Real-time Auto-Sync
 document.addEventListener('DOMContentLoaded', () => {
     fetchPosts();
 
