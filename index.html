@@ -16,7 +16,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white font-sans antialiased">
 
-    <!-- Header / Navigasi Atas yang Lebih Elegan -->
+    <!-- Header / Navigasi Atas -->
     <header class="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between shadow-lg shadow-black/20">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-inner">
@@ -34,7 +34,7 @@
     </header>
 
     <!-- Kontainer Linimasa Pesan -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-36">
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-48">
         <div id="postsContainer" class="space-y-3.5">
             <div class="text-center py-12 text-slate-500 text-xs flex flex-col items-center gap-2">
                 <div class="w-6 h-6 border-2 border-slate-700 border-t-sky-500 rounded-full animate-spin"></div>
@@ -43,7 +43,7 @@
         </div>
     </main>
 
-    <!-- Footer / Kotak Input Pesan Floating yang Lebih Estetik -->
+    <!-- Footer / Kotak Input Pesan Floating -->
     <footer class="fixed bottom-6 left-4 right-4 z-30 max-w-xl mx-auto">
         <!-- Kotak Peringatan / Error -->
         <div id="alertBox" class="hidden mb-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2.5 shadow-xl backdrop-blur-md">
@@ -51,7 +51,7 @@
             <span id="alertText">Pesan ditolak sistem!</span>
         </div>
 
-        <div class="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-4 space-y-3 shadow-2xl shadow-black/80 ring-1 ring-white/5">
+        <div class="bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-4 space-y-3 shadow-2xl shadow-black/80 ring-1 ring-white/5">
             <!-- Input Nama Pengirim -->
             <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
@@ -65,33 +65,42 @@
                 <textarea id="postContent" rows="2" placeholder="Tulis unek-unek atau pesan publikmu di sini..." 
                     class="w-full bg-transparent text-slate-100 placeholder-slate-600 text-xs focus:outline-none resize-none leading-relaxed"></textarea>
             </div>
-            <!-- Pilihan Mood Aura di dalam form input -->
-<div class="flex items-center gap-2 pt-1 pb-1 overflow-x-auto">
-    <span class="text-[10px] text-slate-500 shrink-0">Aura:</span>
-    <label class="cursor-pointer">
-        <input type="radio" name="postMood" value="chill" checked class="peer hidden">
-        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-sky-500/20 peer-checked:text-sky-400 peer-checked:border peer-checked:border-sky-500/40 block transition">✨ Chill</span>
-    </label>
-    <label class="cursor-pointer">
-        <input type="radio" name="postMood" value="rant" class="peer hidden">
-        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-rose-500/20 peer-checked:text-rose-400 peer-checked:border peer-checked:border-rose-500/40 block transition">🔥 Rant</span>
-    </label>
-    <label class="cursor-pointer">
-        <input type="radio" name="postMood" value="mystery" class="peer hidden">
-        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-purple-500/20 peer-checked:text-purple-400 peer-checked:border peer-checked:border-purple-500/40 block transition">🔮 Mystery</span>
-    </label>
-    <label class="cursor-pointer">
-        <input type="radio" name="postMood" value="melancholy" class="peer hidden">
-        <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 peer-checked:bg-blue-500/20 peer-checked:text-blue-400 peer-checked:border peer-checked:border-blue-500/40 block transition">🌧️ Melancholy</span>
-    </label>
-</div>
-            <div class="flex items-center justify-between pt-1">
+
+            <!-- Input Tautan GIF (Opsional) -->
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
+                <i data-lucide="image" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
+                <input type="text" id="postGif" placeholder="Link GIF (Opsional, misal dari Tenor/Giphy)" 
+                    class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
+            </div>
+
+            <!-- Pilihan Mood Aura -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <span class="text-[10px] text-slate-500 shrink-0 font-medium">Aura:</span>
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="postMood" value="chill" checked class="peer hidden">
+                    <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-sky-500/15 peer-checked:text-sky-400 peer-checked:border-sky-500/40 block transition">✨ Chill</span>
+                </label>
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="postMood" value="rant" class="peer hidden">
+                    <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-rose-500/15 peer-checked:text-rose-400 peer-checked:border-rose-500/40 block transition">🔥 Rant</span>
+                </label>
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="postMood" value="mystery" class="peer hidden">
+                    <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-purple-500/15 peer-checked:text-purple-400 peer-checked:border-purple-500/40 block transition">🔮 Mystery</span>
+                </label>
+                <label class="cursor-pointer shrink-0">
+                    <input type="radio" name="postMood" value="melancholy" class="peer hidden">
+                    <span class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-blue-500/15 peer-checked:text-blue-400 peer-checked:border-blue-500/40 block transition">🌧️ Melancholy</span>
+                </label>
+            </div>
+            
+            <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-500/70"></i>
                     <span>Secure & Filtered</span>
                 </div>
                 <!-- Tombol Kirim -->
-                <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition duration-150 flex items-center gap-2 shadow-lg shadow-sky-500/25 shrink-0">
+                <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-5 py-2 rounded-xl transition duration-150 flex items-center gap-2 shadow-lg shadow-sky-500/25 shrink-0">
                     <span>Posting</span>
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                 </button>
