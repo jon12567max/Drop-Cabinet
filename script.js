@@ -72,7 +72,18 @@ function getMoodStyle(mood) {
             };
     }
 }
-
+// Fungsi untuk otomatis mengisi input GIF dari tombol preset
+function setPresetGif(url) {
+    const gifInput = document.getElementById('postGif');
+    if (gifInput) {
+        gifInput.value = url;
+        if (url) {
+            showAlert('GIF berhasil dipilih! Silakan klik Posting.');
+        } else {
+            showAlert('Pilihan GIF dibersihkan.');
+        }
+    }
+}
 // 3. Render Kartu Pesan ke Linimasa
 function renderPosts(posts) {
     const container = document.getElementById('postsContainer');
