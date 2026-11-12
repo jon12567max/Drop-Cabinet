@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drop Cabinet - Ruang Pesan Anonim</title>
+    <title>Drop Cabinet - Ruang Pesan Anonim Publik</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,48 +13,47 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white font-sans antialiased">
 
-    <!-- Header / Navigasi Atas -->
-    <header class="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                <i data-lucide="message-square-code" class="w-4 h-4"></i>
+    <!-- Header / Navigasi Atas yang Lebih Elegan -->
+    <header class="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between shadow-lg shadow-black/20">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-inner">
+                <i data-lucide="layers" class="w-4 h-4"></i>
             </div>
             <div>
-                <h1 class="font-bold text-sm tracking-wide">Drop Cabinet</h1>
-                <p class="text-[10px] text-slate-400">Ruang Pesan Anonim</p>
+                <h1 class="font-bold text-sm tracking-wide bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Drop Cabinet</h1>
+                <p class="text-[10px] text-slate-500 font-medium">Public Anonymous Board</p>
             </div>
         </div>
-        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Online</span>
+        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-medium tracking-wide shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Live Feed</span>
         </div>
     </header>
 
-    <!-- Kontainer Linimasa Pesan (Jarak Bawah pb-36 Agar Tidak Tertutup Input Floating) -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-3 pb-36">
-        <div id="postsContainer" class="space-y-3">
-            <div class="text-center py-10 text-slate-500 text-xs">
-                Memuat pesan...
+    <!-- Kontainer Linimasa Pesan -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-36">
+        <div id="postsContainer" class="space-y-3.5">
+            <div class="text-center py-12 text-slate-500 text-xs flex flex-col items-center gap-2">
+                <div class="w-6 h-6 border-2 border-slate-700 border-t-sky-500 rounded-full animate-spin"></div>
+                Memuat pesan publik...
             </div>
         </div>
     </main>
 
-    <!-- Footer / Kotak Input Pesan Floating (Aman dari Badge Netlify) -->
+    <!-- Footer / Kotak Input Pesan Floating yang Lebih Estetik -->
     <footer class="fixed bottom-6 left-4 right-4 z-30 max-w-xl mx-auto">
         <!-- Kotak Peringatan / Error -->
-        <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2 shadow-lg backdrop-blur-md">
-            <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0"></i>
+        <div id="alertBox" class="hidden mb-2 px-3.5 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2.5 shadow-xl backdrop-blur-md">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
             <span id="alertText">Pesan ditolak sistem!</span>
         </div>
 
-        <div class="bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 p-3.5 space-y-2.5 shadow-2xl shadow-black/80">
+        <div class="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-4 space-y-3 shadow-2xl shadow-black/80 ring-1 ring-white/5">
             <!-- Input Nama Pengirim -->
-            <div class="flex items-center gap-2 pb-2 border-b border-slate-800/60">
+            <div class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
                 <input type="text" id="senderName" placeholder="Nama / Panggilan (Opsional)" 
                     maxlength="30"
@@ -62,13 +61,18 @@
             </div>
 
             <!-- Input Isi Pesan -->
-            <textarea id="postContent" rows="2" placeholder="Tulis pesan atau unek-unekmu di sini..." 
-                class="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none leading-relaxed"></textarea>
+            <div class="px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
+                <textarea id="postContent" rows="2" placeholder="Tulis unek-unek atau pesan publikmu di sini..." 
+                    class="w-full bg-transparent text-slate-100 placeholder-slate-600 text-xs focus:outline-none resize-none leading-relaxed"></textarea>
+            </div>
             
-            <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 mt-1">
-                <span class="text-[10px] text-slate-500">Strict Link Blocker</span>
+            <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-500/70"></i>
+                    <span>Secure & Filtered</span>
+                </div>
                 <!-- Tombol Kirim -->
-                <button onclick="savePost()" id="saveBtn" class="bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-semibold text-xs px-4 py-2 rounded-full transition duration-150 flex items-center gap-1.5 shadow-lg shadow-sky-500/20 shrink-0">
+                <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition duration-150 flex items-center gap-2 shadow-lg shadow-sky-500/25 shrink-0">
                     <span>Posting</span>
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
                 </button>
