@@ -1,23 +1,21 @@
 // ==========================================
-// DROP CABINET - SCRIPT UTAMA (KLASIK & PROFIL)
+// DROP CABINET - SCRIPT UTAMA (BERSIH & STABIL)
 // ==========================================
 
 const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Data Pengguna yang Disimpan di Browser (LocalStorage)
+// Data Pengguna (LocalStorage)
 let currentUser = {
     name: localStorage.getItem('dc_username') || '',
     bio: localStorage.getItem('dc_userbio') || ''
 };
 
-// Inisialisasi Tampilan Profil saat halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     updateProfileUI();
     fetchPosts();
 
-    // Real-time listener Supabase
     supabaseClient
         .channel('public:posts')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
@@ -26,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .subscribe();
 });
 
-// Update Tampilan Profil di Header & Kartu Profil
 function updateProfileUI() {
     const profileCard = document.getElementById('userProfileCard');
     const headerText = document.getElementById('headerLoginText');
@@ -39,19 +36,18 @@ function updateProfileUI() {
     if (currentUser.name) {
         if (profileCard) profileCard.classList.remove('hidden');
         if (headerText) headerText.innerText = currentUser.name;
-        if (posterIndicator) posterIndicator.innerHTML = `Posting sebagai: <b>${escapeHtml(currentUser.name)}</b>`;
+        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>${escapeHtml(currentUser.name)}</b>`;
         
         if (profileAvatar) profileAvatar.innerText = currentUser.name.charAt(0).toUpperCase();
         if (profileDisplayName) profileDisplayName.innerText = currentUser.name;
         if (profileBioText) profileBioText.innerText = currentUser.bio || 'Belum ada status bio...';
     } else {
         if (profileCard) profileCard.classList.add('hidden');
-        if (headerText) headerText.innerText = 'Masuk / Profil';
-        if (posterIndicator) posterIndicator.innerHTML = `Posting sebagai: <b>Anonim</b>`;
+        if (headerText) headerText.innerText = 'Profil';
+        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>Anonim</b>`;
     }
 }
 
-// Modal Login / Profil
 function openLoginModal() {
     document.getElementById('inputLoginName').value = currentUser.name;
     document.getElementById('inputLoginBio').value = currentUser.bio;
@@ -77,7 +73,6 @@ function saveLoginProfile() {
     showAlert('Profil berhasil disimpan!');
 }
 
-// Notifikasi Peringatan
 function showAlert(msg) {
     const alertBox = document.getElementById('alertBox');
     const alertText = document.getElementById('alertText');
@@ -90,7 +85,6 @@ function showAlert(msg) {
     }
 }
 
-// Ambil & Tampilkan Postingan
 async function fetchPosts() {
     const { data, error } = await supabaseClient
         .from('posts')
@@ -124,7 +118,7 @@ function renderPosts(posts) {
     if (!container) return;
 
     if (posts.length === 0) {
-        container.innerHTML = `<div class="text-center py-12 text-slate-500 text-xs">Belum ada pesan. Jadilah yang pertama menulis!</div>`;
+        container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs">Belum ada pesan. Jadilah yang pertama menulis!</div>`;
         return;
     }
 
@@ -135,19 +129,19 @@ function renderPosts(posts) {
         const content = escapeHtml(post.content || '');
 
         return `
-            <div class="rounded-2xl border p-4 shadow-xl backdrop-blur-md transition ${style.bg} space-y-2.5">
+            <div class="rounded-2xl border p-3.5 shadow-xl backdrop-blur-md transition ${style.bg} space-y-2">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 font-bold text-xs">
+                        <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 font-bold text-[11px]">
                             ${sender.charAt(0).toUpperCase()}
                         </div>
                         <span class="font-semibold text-xs text-slate-200">${sender}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[10px] px-2 py-0.5 rounded-full border ${style.badge} font-medium">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] px-2 py-0.5 rounded-full border ${style.badge} font-medium">
                             ${style.label}
                         </span>
-                        <span class="text-[10px] text-slate-500">${timeAgo}</span>
+                        <span class="text-[9px] text-slate-500">${timeAgo}</span>
                     </div>
                 </div>
                 <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words pl-1">${content}</p>
@@ -184,7 +178,7 @@ async function savePost() {
         }]);
 
     saveBtn.disabled = false;
-    saveBtn.innerHTML = '<span>Posting</span><i data-lucide="send" class="w-3.5 h-3.5"></i>';
+    saveBtn.innerHTML = '<span>Posting</span><i data-lucide="send" class="w-3 h-3"></i>';
     if (window.lucide) lucide.createIcons();
 
     if (error) {
@@ -215,4 +209,4 @@ function timeSince(date) {
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + ' mnt lalu';
     return 'Baru saja';
-            }
+}
