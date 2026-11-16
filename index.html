@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drop Cabinet - Ruang Pesan Anonim Publik</title>
+    <title>Drop Cabinet - Classic Profile</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,17 +24,45 @@
             </div>
             <div>
                 <h1 class="font-bold text-sm tracking-wide bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Drop Cabinet</h1>
-                <p class="text-[10px] text-slate-500 font-medium">Public Anonymous Board</p>
+                <p class="text-[10px] text-slate-500 font-medium">Classic Feed & Profile</p>
             </div>
         </div>
-        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-medium tracking-wide shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Live Feed</span>
+
+        <!-- Tombol Status Login / Profil -->
+        <div id="authHeaderSection">
+            <button onclick="openLoginModal()" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700/60 text-slate-300 text-xs font-medium hover:border-sky-500 transition flex items-center gap-1.5">
+                <i data-lucide="user-check" class="w-3.5 h-3.5 text-sky-400"></i>
+                <span id="headerLoginText">Masuk / Profil</span>
+            </button>
         </div>
     </header>
 
-    <!-- Kontainer Linimasa Pesan -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-56">
+    <!-- Kontainer Utama -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-44">
+        
+        <!-- Kartu Profil Pengguna (Ala Facebook 1.0) -->
+        <div id="userProfileCard" class="hidden bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 shadow-xl backdrop-blur-md space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-base shadow-md" id="profileAvatar">
+                        A
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm text-slate-200" id="profileDisplayName">Nama Pengguna</h2>
+                        <p class="text-[10px] text-sky-400 font-medium">Member Drop Cabinet</p>
+                    </div>
+                </div>
+                <button onclick="openLoginModal()" class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">
+                    Ubah Profil
+                </button>
+            </div>
+            <div class="text-xs text-slate-400">
+                <span class="text-[10px] text-slate-500 block uppercase tracking-wider font-semibold">Tentang Saya (Bio):</span>
+                <p id="profileBioText" class="mt-0.5 text-slate-300 italic">Belum ada status bio...</p>
+            </div>
+        </div>
+
+        <!-- Linimasa Pesan -->
         <div id="postsContainer" class="space-y-3.5">
             <div class="text-center py-12 text-slate-500 text-xs flex flex-col items-center gap-2">
                 <div class="w-6 h-6 border-2 border-slate-700 border-t-sky-500 rounded-full animate-spin"></div>
@@ -51,48 +79,11 @@
             <span id="alertText">Pesan ditolak sistem!</span>
         </div>
 
-        <!-- Pop-Up Galeri GIF Ala Instagram -->
-        <div id="gifPickerModal" class="hidden mb-2 bg-slate-900/95 backdrop-blur-2xl rounded-2xl border border-slate-800 p-3 shadow-2xl space-y-2.5">
-            <div class="flex items-center gap-2">
-                <div class="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 focus-within:border-sky-500/50">
-                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
-                    <input type="text" id="gifSearchInput" placeholder="Cari GIF (misal: kucing, ketawa, sedih)..." 
-                        oninput="handleGifSearch(this.value)"
-                        class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
-                </div>
-                <button type="button" onclick="toggleGifPicker()" class="w-7 h-7 rounded-xl bg-slate-800 text-slate-400 hover:text-white text-xs flex items-center justify-center shrink-0">
-                    ✕
-                </button>
-            </div>
-            
-            <!-- Grid Hasil GIF -->
-            <div id="gifGrid" class="grid grid-cols-3 gap-1.5 max-h-48 overflow-y-auto pr-1">
-                <!-- GIF muncul otomatis di sini -->
-            </div>
-            <div class="text-[9px] text-slate-600 text-right">Powered by GIPHY</div>
-        </div>
-
         <div class="bg-slate-900/95 backdrop-blur-2xl rounded-3xl border border-slate-800/80 p-3.5 space-y-2.5 shadow-2xl shadow-black/80 ring-1 ring-white/5">
-            <!-- Input Nama Pengirim -->
-            <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
-                <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500 shrink-0"></i>
-                <input type="text" id="senderName" placeholder="Nama / Panggilan (Opsional)" 
-                    maxlength="30"
-                    class="w-full bg-transparent text-slate-200 placeholder-slate-600 text-xs focus:outline-none" />
-            </div>
-
             <!-- Input Isi Pesan -->
             <div class="px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800/60 focus-within:border-sky-500/50 transition">
-                <textarea id="postContent" rows="2" placeholder="Tulis unek-unek atau pesan publikmu di sini..." 
+                <textarea id="postContent" rows="2" placeholder="Tulis pesan publikmu di sini..." 
                     class="w-full bg-transparent text-slate-100 placeholder-slate-600 text-xs focus:outline-none resize-none leading-relaxed"></textarea>
-            </div>
-
-            <!-- Pratinjau GIF Terpilih (Muncul otomatis saat GIF dipilih) -->
-            <div id="selectedGifPreview" class="hidden relative w-20 h-20 rounded-xl overflow-hidden border border-sky-500/40 bg-slate-950">
-                <img id="previewGifImg" src="" alt="Selected GIF" class="w-full h-full object-cover" />
-                <button type="button" onclick="clearSelectedGif()" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/75 text-white text-[10px] flex items-center justify-center hover:bg-rose-500 transition">
-                    ✕
-                </button>
             </div>
 
             <!-- Pilihan Mood Aura -->
@@ -116,12 +107,9 @@
                 </label>
             </div>
             
-            <!-- Baris Tombol Bawah (Tombol GIF + Tombol Posting) -->
+            <!-- Tombol Kirim -->
             <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/60">
-                <button type="button" onclick="toggleGifPicker()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 active:scale-95 text-sky-400 border border-slate-700/60 text-xs font-medium transition">
-                    <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
-                    <span>Pilih GIF</span>
-                </button>
+                <span class="text-[10px] text-slate-500" id="currentPosterIndicator">Posting sebagai: <b>Anonim</b></span>
 
                 <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-5 py-2 rounded-xl transition duration-150 flex items-center gap-2 shadow-lg shadow-sky-500/25 shrink-0">
                     <span>Posting</span>
@@ -130,6 +118,32 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modal Login / Atur Profil Sederhana -->
+    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-slate-200">Identitas Profil Kamu</h3>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Nama / Panggilan:</label>
+                    <input type="text" id="inputLoginName" placeholder="Contoh: Budi Santoso" maxlength="30"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Bio Singkat (Status Profil):</label>
+                    <input type="text" id="inputLoginBio" placeholder="Contoh: Suka kopi & teknologi" maxlength="60"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button onclick="closeLoginModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs">Batal</button>
+                <button onclick="saveLoginProfile()" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-medium">Simpan Profil</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Hubungkan ke file script.js -->
     <script src="script.js"></script>
