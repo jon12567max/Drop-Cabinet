@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop Cabinet - Clean & Stable</title>
+    <title>Drop Cabinet</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* Mencegah pergeseran aneh pada placeholder di mobile */
+        /* Mengunci ukuran placeholder agar stabil saat diketik di HP */
         textarea::placeholder, input::placeholder {
             font-size: 12px;
             color: #64748b;
@@ -25,7 +25,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white font-sans antialiased">
 
     <!-- Header / Navigasi Atas -->
-    <header class="sticky top-0 z-20 bg-slate-950/9ોર્ backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg shadow-black/20">
+    <header class="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg shadow-black/20">
         <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-inner">
                 <i data-lucide="layers" class="w-4 h-4"></i>
@@ -88,14 +88,14 @@
         </div>
 
         <div class="bg-slate-900/95 backdrop-blur-2xl rounded-2xl border border-slate-800/80 p-3 space-y-2 shadow-2xl shadow-black/80 ring-1 ring-white/5">
-            <!-- Input Isi Pesan (Stabil di HP, tanpa loncatan ukuran placeholder) -->
+            <!-- Input Isi Pesan (Stabil) -->
             <div class="px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 focus-within:border-sky-500/50 transition">
                 <textarea id="postContent" rows="2" placeholder="Tulis pesan publikmu di sini..." 
                     class="w-full bg-transparent text-slate-100 text-xs focus:outline-none resize-none leading-normal"></textarea>
             </div>
 
             <!-- Pilihan Mood Aura -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
                 <span class="text-[10px] text-slate-500 shrink-0 font-medium">Aura:</span>
                 <label class="cursor-pointer shrink-0">
                     <input type="radio" name="postMood" value="chill" checked class="peer hidden">
