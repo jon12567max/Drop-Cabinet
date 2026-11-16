@@ -1,5 +1,5 @@
 // ==========================================
-// DROP CABINET - SCRIPT UTAMA (BERSIH & AMAN)
+// DROP CABINET - SCRIPT UTAMA (TWITTER UI)
 // ==========================================
 
 const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
@@ -23,33 +23,46 @@ document.addEventListener('DOMContentLoaded', () => {
         .subscribe();
 });
 
+function makeHandle(name) {
+    if (!name) return '@anonim';
+    return '@' + name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 15) || '@user';
+}
+
 function updateProfileUI() {
     const profileCard = document.getElementById('userProfileCard');
     const headerText = document.getElementById('headerLoginText');
+    const headerAvatar = document.getElementById('headerAvatarBtn');
+    const composerAvatar = document.getElementById('composerAvatar');
     const posterIndicator = document.getElementById('currentPosterIndicator');
     
-    const profileAvatar = document.getElementById('profileAvatar');
     const profileDisplayName = document.getElementById('profileDisplayName');
+    const profileHandle = document.getElementById('profileHandle');
     const profileBioText = document.getElementById('profileBioText');
+
+    const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'A';
+    if (headerAvatar) headerAvatar.innerText = initial;
+    if (composerAvatar) composerAvatar.innerText = initial;
 
     if (currentUser.name) {
         if (profileCard) profileCard.classList.remove('hidden');
         if (headerText) headerText.innerText = currentUser.name;
-        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>${escapeHtml(currentUser.name)}</b>`;
-        
-        if (profileAvatar) profileAvatar.innerText = currentUser.name.charAt(0).toUpperCase();
         if (profileDisplayName) profileDisplayName.innerText = currentUser.name;
-        if (profileBioText) profileBioText.innerText = currentUser.bio || 'Belum ada status bio...';
+        if (profileHandle) profileHandle.innerText = makeHandle(currentUser.name);
+        if (profileBioText) profileBioText.innerText = currentUser.bio || 'Belum ada bio...';
+        if (posterIndicator) posterIndicator.innerHTML = `<i data-lucide="globe" class="w-3.5 h-3.5"></i><span>Posting sebagai ${escapeHtml(currentUser.name)}</span>`;
     } else {
         if (profileCard) profileCard.classList.add('hidden');
-        if (headerText) headerText.innerText = 'Profil';
-        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>Anonim</b>`;
+        if (headerText) headerText.innerText = 'Atur Profil';
+        if (posterIndicator) posterIndicator.innerHTML = `<i data-lucide="globe" class="w-3.5 h-3.5"></i><span>Posting sebagai Anonim</span>`;
     }
+
+    if (window.lucide) lucide.createIcons();
 }
 
 function openLoginModal() {
     document.getElementById('inputLoginName').value = currentUser.name;
     document.getElementById('inputLoginBio').value = currentUser.bio;
+    document.getElementById('modalAvatarPreview').innerText = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'A';
     document.getElementById('loginModal').classList.remove('hidden');
 }
 
@@ -69,7 +82,7 @@ function saveLoginProfile() {
 
     closeLoginModal();
     updateProfileUI();
-    showAlert('Profil berhasil disimpan!');
+    showAlert('Profil berhasil diperbarui.');
 }
 
 function showAlert(msg) {
@@ -80,7 +93,7 @@ function showAlert(msg) {
         alertBox.classList.remove('hidden');
         setTimeout(() => {
             alertBox.classList.add('hidden');
-        }, 4000);
+        }, 3500);
     }
 }
 
@@ -99,17 +112,29 @@ async function fetchPosts() {
     renderPosts(data || []);
 }
 
-function getMoodStyle(mood) {
+function getMoodBadge(mood) {
     switch(mood) {
         case 'rant':
-            return { bg: 'bg-rose-950/25 border-rose-500/30', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', label: '🔥 Rant' };
+            return `<span class="text-[11px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full">🔥 Rant</span>`;
         case 'mystery':
-            return { bg: 'bg-purple-950/25 border-purple-500/30', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: '🔮 Mystery' };
+            return `<span class="text-[11px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full">🔮 Mystery</span>`;
         case 'melancholy':
-            return { bg: 'bg-blue-950/25 border-blue-500/30', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20', label: '🌧️ Melancholy' };
+            return `<span class="text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">🌧️ Melancholy</span>`;
         default:
-            return { bg: 'bg-slate-900/60 border-slate-800/80', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20', label: '✨ Chill' };
+            return `<span class="text-[11px] text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full">✨ Chill</span>`;
     }
+}
+
+function getAvatarColor(name) {
+    const colors = [
+        'bg-sky-500', 'bg-emerald-500', 'bg-violet-500', 
+        'bg-rose-500', 'bg-amber-500', 'bg-indigo-500'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
 }
 
 function renderPosts(posts) {
@@ -117,34 +142,57 @@ function renderPosts(posts) {
     if (!container) return;
 
     if (posts.length === 0) {
-        container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs">Belum ada pesan. Jadilah yang pertama menulis!</div>`;
+        container.innerHTML = `<div class="text-center py-12 text-[#71767b] text-sm">Belum ada postingan. Mulailah menulis sesuatu!</div>`;
         return;
     }
 
     container.innerHTML = posts.map(post => {
-        const style = getMoodStyle(post.mood);
         const timeAgo = timeSince(new Date(post.created_at));
         const sender = escapeHtml(post.sender_name || 'Anonim');
+        const handle = escapeHtml(makeHandle(post.sender_name || 'Anonim'));
         const content = escapeHtml(post.content || '');
+        const avatarBg = getAvatarColor(sender);
+        const moodTag = getMoodBadge(post.mood);
 
         return `
-            <div class="rounded-2xl border p-3.5 shadow-xl backdrop-blur-md transition ${style.bg} space-y-2">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 font-bold text-[11px]">
-                            ${sender.charAt(0).toUpperCase()}
+            <article class="px-4 py-3.5 hover:bg-white/[0.02] transition flex gap-3">
+                <!-- Foto Profil Bulat Kiri -->
+                <div class="w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5">
+                    ${sender.charAt(0).toUpperCase()}
+                </div>
+
+                <!-- Konten Tweet Kanan -->
+                <div class="flex-1 min-w-0">
+                    <!-- Baris Nama, @Handle & Waktu -->
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="font-bold text-[15px] text-[#e7e9ea] truncate">${sender}</span>
+                            <span class="text-xs text-[#71767b] truncate">${handle}</span>
+                            <span class="text-xs text-[#71767b]">·</span>
+                            <span class="text-xs text-[#71767b] shrink-0">${timeAgo}</span>
                         </div>
-                        <span class="font-semibold text-xs text-slate-200">${sender}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-[9px] px-2 py-0.5 rounded-full border ${style.badge} font-medium">
-                            ${style.label}
-                        </span>
-                        <span class="text-[9px] text-slate-500">${timeAgo}</span>
+
+                    <!-- Teks Utama -->
+                    <p class="text-[15px] text-[#e7e9ea] leading-normal whitespace-pre-wrap break-words mt-1">${content}</p>
+
+                    <!-- Baris Bawah (Mood Tag & Ikon Interaksi Ala Twitter) -->
+                    <div class="flex items-center justify-between mt-3 text-[#71767b]">
+                        <div>${moodTag}</div>
+                        <div class="flex items-center gap-5">
+                            <span class="flex items-center gap-1 text-xs hover:text-sky-400 transition cursor-default">
+                                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                            </span>
+                            <span class="flex items-center gap-1 text-xs hover:text-emerald-400 transition cursor-default">
+                                <i data-lucide="repeat-2" class="w-3.5 h-3.5"></i>
+                            </span>
+                            <span class="flex items-center gap-1 text-xs hover:text-rose-400 transition cursor-default">
+                                <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words pl-1">${content}</p>
-            </div>
+            </article>
         `;
     }).join('');
 
@@ -160,12 +208,12 @@ async function savePost() {
     const senderName = currentUser.name || 'Anonim';
 
     if (!content) {
-        showAlert('Tulis pesan terlebih dahulu!');
+        showAlert('Tulis sesuatu sebelum memposting!');
         return;
     }
 
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '<span>Memposting...</span>';
+    saveBtn.innerText = 'Memposting...';
 
     const { error } = await supabaseClient
         .from('posts')
@@ -177,12 +225,11 @@ async function savePost() {
         }]);
 
     saveBtn.disabled = false;
-    saveBtn.innerHTML = '<span>Posting</span><i data-lucide="send" class="w-3 h-3"></i>';
-    if (window.lucide) lucide.createIcons();
+    saveBtn.innerText = 'Posting';
 
     if (error) {
         console.error('Gagal menyimpan:', error);
-        showAlert('Gagal mengirim pesan, silakan coba lagi.');
+        showAlert('Gagal mengirim postingan, coba lagi.');
     } else {
         contentInput.value = '';
         fetchPosts();
@@ -198,14 +245,14 @@ function escapeHtml(text) {
 function timeSince(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + ' th lalu';
+    if (interval > 1) return Math.floor(interval) + 'thn';
     interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + ' bln lalu';
+    if (interval > 1) return Math.floor(interval) + 'bln';
     interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + ' hr lalu';
+    if (interval > 1) return Math.floor(interval) + 'h';
     interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + ' jam lalu';
+    if (interval > 1) return Math.floor(interval) + 'j';
     interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + ' mnt lalu';
-    return 'Baru saja';
-}
+    if (interval > 1) return Math.floor(interval) + 'm';
+    return 'Baru';
+            }
