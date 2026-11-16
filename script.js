@@ -1,163 +1,211 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Drop Cabinet</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Supabase JS Client CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        textarea::placeholder, input::placeholder {
-            font-size: 12px;
-            color: #64748b;
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white font-sans antialiased">
+// ==========================================
+// DROP CABINET - SCRIPT UTAMA (BERSIH & AMAN)
+// ==========================================
 
-    <!-- Header / Navigasi Atas -->
-    <header class="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg shadow-black/20">
-        <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500/20 to-indigo-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-inner">
-                <i data-lucide="layers" class="w-4 h-4"></i>
-            </div>
-            <div>
-                <h1 class="font-bold text-xs tracking-wide bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Drop Cabinet</h1>
-                <p class="text-[9px] text-slate-500 font-medium">Classic Feed & Profile</p>
-            </div>
-        </div>
+const SUPABASE_URL = 'https://cevofxyyfvcaookqozmf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_xCma_WLsgPLEq-NOsTuQkg_bWF7ejk7';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <!-- Tombol Status Login / Profil -->
-        <div id="authHeaderSection">
-            <button onclick="openLoginModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/60 text-slate-300 text-xs font-medium hover:border-sky-500 transition flex items-center gap-1.5">
-                <i data-lucide="user-check" class="w-3.5 h-3.5 text-sky-400"></i>
-                <span id="headerLoginText">Profil</span>
-            </button>
-        </div>
-    </header>
+let currentUser = {
+    name: localStorage.getItem('dc_username') || '',
+    bio: localStorage.getItem('dc_userbio') || ''
+};
 
-    <!-- Kontainer Utama -->
-    <main class="flex-1 max-w-xl w-full mx-auto p-3.5 space-y-3.5 pb-40">
+document.addEventListener('DOMContentLoaded', () => {
+    updateProfileUI();
+    fetchPosts();
+
+    supabaseClient
+        .channel('public:posts')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
+            fetchPosts();
+        })
+        .subscribe();
+});
+
+function updateProfileUI() {
+    const profileCard = document.getElementById('userProfileCard');
+    const headerText = document.getElementById('headerLoginText');
+    const posterIndicator = document.getElementById('currentPosterIndicator');
+    
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileDisplayName = document.getElementById('profileDisplayName');
+    const profileBioText = document.getElementById('profileBioText');
+
+    if (currentUser.name) {
+        if (profileCard) profileCard.classList.remove('hidden');
+        if (headerText) headerText.innerText = currentUser.name;
+        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>${escapeHtml(currentUser.name)}</b>`;
         
-        <!-- Kartu Profil Pengguna (Ala Facebook 1.0) -->
-        <div id="userProfileCard" class="hidden bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3.5 shadow-xl backdrop-blur-md space-y-2.5">
-            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md" id="profileAvatar">
-                        A
+        if (profileAvatar) profileAvatar.innerText = currentUser.name.charAt(0).toUpperCase();
+        if (profileDisplayName) profileDisplayName.innerText = currentUser.name;
+        if (profileBioText) profileBioText.innerText = currentUser.bio || 'Belum ada status bio...';
+    } else {
+        if (profileCard) profileCard.classList.add('hidden');
+        if (headerText) headerText.innerText = 'Profil';
+        if (posterIndicator) posterIndicator.innerHTML = `Sebagai: <b>Anonim</b>`;
+    }
+}
+
+function openLoginModal() {
+    document.getElementById('inputLoginName').value = currentUser.name;
+    document.getElementById('inputLoginBio').value = currentUser.bio;
+    document.getElementById('loginModal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+    document.getElementById('loginModal').classList.add('hidden');
+}
+
+function saveLoginProfile() {
+    const nameInput = document.getElementById('inputLoginName').value.trim();
+    const bioInput = document.getElementById('inputLoginBio').value.trim();
+
+    currentUser.name = nameInput;
+    currentUser.bio = bioInput;
+
+    localStorage.setItem('dc_username', currentUser.name);
+    localStorage.setItem('dc_userbio', currentUser.bio);
+
+    closeLoginModal();
+    updateProfileUI();
+    showAlert('Profil berhasil disimpan!');
+}
+
+function showAlert(msg) {
+    const alertBox = document.getElementById('alertBox');
+    const alertText = document.getElementById('alertText');
+    if (alertBox && alertText) {
+        alertText.innerText = msg;
+        alertBox.classList.remove('hidden');
+        setTimeout(() => {
+            alertBox.classList.add('hidden');
+        }, 4000);
+    }
+}
+
+async function fetchPosts() {
+    const { data, error } = await supabaseClient
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+    if (error) {
+        console.error('Gagal memuat pesan:', error);
+        return;
+    }
+
+    renderPosts(data || []);
+}
+
+function getMoodStyle(mood) {
+    switch(mood) {
+        case 'rant':
+            return { bg: 'bg-rose-950/25 border-rose-500/30', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/20', label: '🔥 Rant' };
+        case 'mystery':
+            return { bg: 'bg-purple-950/25 border-purple-500/30', badge: 'bg-purple-500/10 text-purple-400 border-purple-500/20', label: '🔮 Mystery' };
+        case 'melancholy':
+            return { bg: 'bg-blue-950/25 border-blue-500/30', badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20', label: '🌧️ Melancholy' };
+        default:
+            return { bg: 'bg-slate-900/60 border-slate-800/80', badge: 'bg-sky-500/10 text-sky-400 border-sky-500/20', label: '✨ Chill' };
+    }
+}
+
+function renderPosts(posts) {
+    const container = document.getElementById('postsContainer');
+    if (!container) return;
+
+    if (posts.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs">Belum ada pesan. Jadilah yang pertama menulis!</div>`;
+        return;
+    }
+
+    container.innerHTML = posts.map(post => {
+        const style = getMoodStyle(post.mood);
+        const timeAgo = timeSince(new Date(post.created_at));
+        const sender = escapeHtml(post.sender_name || 'Anonim');
+        const content = escapeHtml(post.content || '');
+
+        return `
+            <div class="rounded-2xl border p-3.5 shadow-xl backdrop-blur-md transition ${style.bg} space-y-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300 font-bold text-[11px]">
+                            ${sender.charAt(0).toUpperCase()}
+                        </div>
+                        <span class="font-semibold text-xs text-slate-200">${sender}</span>
                     </div>
-                    <div>
-                        <h2 class="font-bold text-xs text-slate-200" id="profileDisplayName">Nama Pengguna</h2>
-                        <p class="text-[9px] text-sky-400 font-medium">Member Drop Cabinet</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] px-2 py-0.5 rounded-full border ${style.badge} font-medium">
+                            ${style.label}
+                        </span>
+                        <span class="text-[9px] text-slate-500">${timeAgo}</span>
                     </div>
                 </div>
-                <button onclick="openLoginModal()" class="text-[10px] px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">
-                    Ubah Profil
-                </button>
+                <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words pl-1">${content}</p>
             </div>
-            <div class="text-xs text-slate-400">
-                <span class="text-[9px] text-slate-500 block uppercase tracking-wider font-semibold">Tentang Saya (Bio):</span>
-                <p id="profileBioText" class="mt-0.5 text-slate-300 italic text-[11px]">Belum ada status bio...</p>
-            </div>
-        </div>
+        `;
+    }).join('');
 
-        <!-- Linimasa Pesan -->
-        <div id="postsContainer" class="space-y-3">
-            <div class="text-center py-10 text-slate-500 text-xs flex flex-col items-center gap-2">
-                <div class="w-5 h-5 border-2 border-slate-700 border-t-sky-500 rounded-full animate-spin"></div>
-                Memuat pesan publik...
-            </div>
-        </div>
-    </main>
+    if (window.lucide) lucide.createIcons();
+}
 
-    <!-- Footer / Kotak Input Pesan Floating -->
-    <footer class="fixed bottom-3 left-3 right-3 z-30 max-w-xl mx-auto">
-        <!-- Kotak Peringatan / Error -->
-        <div id="alertBox" class="hidden mb-2 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2 shadow-xl backdrop-blur-md">
-            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-            <span id="alertText">Pesan ditolak sistem!</span>
-        </div>
+async function savePost() {
+    const contentInput = document.getElementById('postContent');
+    const saveBtn = document.getElementById('saveBtn');
 
-        <div class="bg-slate-900/95 backdrop-blur-2xl rounded-2xl border border-slate-800/80 p-3 space-y-2 shadow-2xl shadow-black/80 ring-1 ring-white/5">
-            <!-- Input Isi Pesan -->
-            <div class="px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 focus-within:border-sky-500/50 transition">
-                <textarea id="postContent" rows="2" placeholder="Tulis pesan publikmu di sini..." 
-                    class="w-full bg-transparent text-slate-100 text-xs focus:outline-none resize-none leading-normal"></textarea>
-            </div>
+    const content = contentInput.value.trim();
+    const selectedMood = document.querySelector('input[name="postMood"]:checked')?.value || 'chill';
+    const senderName = currentUser.name || 'Anonim';
 
-            <!-- Pilihan Mood Aura -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                <span class="text-[10px] text-slate-500 shrink-0 font-medium">Aura:</span>
-                <label class="cursor-pointer shrink-0">
-                    <input type="radio" name="postMood" value="chill" checked class="peer hidden">
-                    <span class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-sky-500/15 peer-checked:text-sky-400 peer-checked:border-sky-500/40 block transition">✨ Chill</span>
-                </label>
-                <label class="cursor-pointer shrink-0">
-                    <input type="radio" name="postMood" value="rant" class="peer hidden">
-                    <span class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-rose-500/15 peer-checked:text-rose-400 peer-checked:border-rose-500/40 block transition">🔥 Rant</span>
-                </label>
-                <label class="cursor-pointer shrink-0">
-                    <input type="radio" name="postMood" value="mystery" class="peer hidden">
-                    <span class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-purple-500/15 peer-checked:text-purple-400 peer-checked:border-purple-500/40 block transition">🔮 Mystery</span>
-                </label>
-                <label class="cursor-pointer shrink-0">
-                    <input type="radio" name="postMood" value="melancholy" class="peer hidden">
-                    <span class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-950/60 text-slate-400 border border-slate-800 peer-checked:bg-blue-500/15 peer-checked:text-blue-400 peer-checked:border-blue-500/40 block transition">🌧️ Melancholy</span>
-                </label>
-            </div>
-            
-            <!-- Tombol Kirim & Info Pengirim -->
-            <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
-                <span class="text-[10px] text-slate-500 truncate max-w-[200px]" id="currentPosterIndicator">Sebagai: <b>Anonim</b></span>
+    if (!content) {
+        showAlert('Tulis pesan terlebih dahulu!');
+        return;
+    }
 
-                <button onclick="savePost()" id="saveBtn" class="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 active:scale-95 text-white font-medium text-xs px-4 py-1.5 rounded-xl transition duration-150 flex items-center gap-1.5 shadow-md shadow-sky-500/20 shrink-0">
-                    <span>Posting</span>
-                    <i data-lucide="send" class="w-3 h-3"></i>
-                </button>
-            </div>
-        </div>
-    </footer>
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span>Memposting...</span>';
 
-    <!-- Modal Login / Atur Profil Sederhana -->
-    <div id="loginModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 max-w-sm w-full space-y-3 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <h3 class="font-bold text-xs text-slate-200">Identitas Profil Kamu</h3>
-                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-xs">✕</button>
-            </div>
-            <div class="space-y-2.5">
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Nama / Panggilan:</label>
-                    <input type="text" id="inputLoginName" placeholder="Contoh: Budi Santoso" maxlength="30"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
-                </div>
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Bio Singkat (Status Profil):</label>
-                    <input type="text" id="inputLoginBio" placeholder="Contoh: Suka kopi & teknologi" maxlength="60"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-sky-500" />
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                <button onclick="closeLoginModal()" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs">Batal</button>
-                <button onclick="saveLoginProfile()" class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-medium">Simpan</button>
-            </div>
-        </div>
-    </div>
+    const { error } = await supabaseClient
+        .from('posts')
+        .insert([{
+            sender_name: senderName,
+            content: content,
+            mood: selectedMood,
+            image_url: null
+        }]);
 
-    <!-- Hubungkan ke file script.js -->
-    <script src="script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) lucide.createIcons();
-        });
-    </script>
-</body>
-</html>
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<span>Posting</span><i data-lucide="send" class="w-3 h-3"></i>';
+    if (window.lucide) lucide.createIcons();
+
+    if (error) {
+        console.error('Gagal menyimpan:', error);
+        showAlert('Gagal mengirim pesan, silakan coba lagi.');
+    } else {
+        contentInput.value = '';
+        fetchPosts();
+    }
+}
+
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, function (m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+}
+
+function timeSince(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + ' th lalu';
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + ' bln lalu';
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + ' hr lalu';
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + ' jam lalu';
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + ' mnt lalu';
+    return 'Baru saja';
+}
